@@ -1,0 +1,1878 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Caderno — Gastos do Luan & Mirela</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#23201B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Gastos">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FBF8F3;
+    --paper-line: #E4DCC9;
+    --ink: #23201B;
+    --ink-soft: #6B6355;
+    --luan: #2B5F5A;
+    --luan-bg: #E4EEEC;
+    --mirela: #93304F;
+    --mirela-bg: #F3E2E7;
+    --ambos: #A67C3D;
+    --ambos-bg: #F3E8D4;
+    --select-ring: #2F5DE3;
+    --error: #B23A2E;
+    --radius: 4px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    background-image: repeating-linear-gradient(
+      to bottom, transparent 0, transparent 38px, var(--paper-line) 39px
+    );
+    color: var(--ink);
+    font-family: 'Work Sans', sans-serif;
+    line-height: 1.5;
+  }
+
+  .wrap { max-width: 760px; margin: 0 auto; padding: 40px 20px 100px; }
+
+  header {
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 18px;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 32px;
+    font-weight: 500;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+
+  .connection-status { font-size: 13px; color: var(--ink-soft); }
+  .connection-status.err { color: var(--error); font-weight: 600; }
+
+  .setup-banner {
+    border: 1px solid var(--error);
+    background: #FBEBE9;
+    color: var(--error);
+    padding: 16px;
+    border-radius: var(--radius);
+    margin-bottom: 24px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .setup-banner code { background: rgba(0,0,0,0.06); padding: 1px 5px; border-radius: 3px; }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--ink);
+    margin-bottom: 28px;
+  }
+  .tab-btn {
+    background: none;
+    border: none;
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    color: var(--ink-soft);
+    padding: 10px 4px;
+    margin-right: 28px;
+    cursor: pointer;
+    position: relative;
+    top: 2px;
+  }
+  .tab-btn.active {
+    color: var(--ink);
+    border-bottom: 2px solid var(--select-ring);
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Form */
+  form {
+    border: 1px solid var(--ink);
+    padding: 22px;
+    background: var(--paper);
+  }
+  .field { margin-bottom: 18px; }
+  .field:last-child { margin-bottom: 0; }
+  .field-label { font-size: 13px; color: var(--ink-soft); margin-bottom: 8px; display: block; }
+
+  .pill-group { display: flex; flex-wrap: wrap; gap: 10px; }
+  .pill {
+    border: 2px solid var(--paper-line);
+    background: #fff;
+    padding: 10px 16px;
+    border-radius: var(--radius);
+    font-family: 'Work Sans', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    color: var(--ink);
+    transition: border-color .12s ease, background .12s ease, transform .06s ease;
+  }
+  .pill:hover { border-color: var(--ink-soft); }
+  .pill:active { transform: scale(0.97); }
+  .pill.selected {
+    border-color: var(--select-ring);
+    box-shadow: 0 0 0 1px var(--select-ring);
+    font-weight: 600;
+  }
+  .pill.selected.Luan { background: var(--luan-bg); color: var(--luan); border-color: var(--select-ring); }
+  .pill.selected.Mirela { background: var(--mirela-bg); color: var(--mirela); border-color: var(--select-ring); }
+  .pill.selected.Ambos { background: var(--ambos-bg); color: var(--ambos); border-color: var(--select-ring); }
+
+  /* Trigger genérico (abre modal) — usado por cartão, categoria e gráfico */
+  .cartao-trigger {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 2px solid var(--paper-line);
+    background: #fff;
+    padding: 12px 14px;
+    border-radius: var(--radius);
+    font-family: 'Work Sans', sans-serif;
+    font-size: 15px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    text-align: left;
+    transition: border-color .12s ease;
+  }
+  .cartao-trigger:hover { border-color: var(--ink-soft); }
+  .cartao-trigger.selected {
+    border-color: var(--select-ring);
+    box-shadow: 0 0 0 1px var(--select-ring);
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .cartao-trigger .chevron { color: var(--ink-soft); font-size: 13px; }
+
+  /* Modal genérico */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(35, 32, 27, 0.45);
+    z-index: 50;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  @media (min-width: 600px) {
+    .modal-overlay { align-items: center; }
+  }
+  .modal-sheet {
+    background: var(--paper);
+    width: 100%;
+    max-width: 480px;
+    max-height: 78vh;
+    border-radius: var(--radius) var(--radius) 0 0;
+    border: 1px solid var(--ink);
+    border-bottom: none;
+    display: flex;
+    flex-direction: column;
+    animation: slideUp .18s ease;
+  }
+  @media (min-width: 600px) {
+    .modal-sheet { border-radius: var(--radius); border-bottom: 1px solid var(--ink); }
+  }
+  @keyframes slideUp {
+    from { transform: translateY(24px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--paper-line);
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+  }
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 16px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    padding: 4px 8px;
+  }
+  .modal-close:hover { color: var(--ink); }
+  .modal-options {
+    overflow-y: auto;
+    padding: 10px;
+  }
+  .modal-option {
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    padding: 13px 12px;
+    font-family: 'Work Sans', sans-serif;
+    font-size: 15px;
+    color: var(--ink);
+    cursor: pointer;
+    border-radius: var(--radius);
+    border: 2px solid transparent;
+  }
+  .modal-option:hover { background: var(--paper-line); }
+  .modal-option.selected {
+    border-color: var(--select-ring);
+    background: #EEF1FC;
+    font-weight: 600;
+  }
+  .modal-body-pad { padding: 18px; }
+  .modal-body-pad p { margin: 0 0 18px; font-size: 14px; color: var(--ink-soft); }
+  .modal-actions { display: flex; gap: 10px; }
+  .modal-actions button { flex: 1; margin-top: 0; }
+  .btn-danger { background: var(--error) !important; }
+
+  /* Toast de sucesso */
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
+    transform: translate(-50%, 12px);
+    background: var(--ink);
+    color: var(--paper);
+    padding: 13px 22px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease, transform .2s ease;
+    z-index: 100;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  .toast::before { content: '✓'; color: #7FD9A0; font-weight: 700; }
+
+  input[type=text], input[type=number], input[type=date], select {
+    width: 100%;
+    border: 2px solid var(--paper-line);
+    background: #fff;
+    padding: 10px 12px;
+    font-family: 'Work Sans', sans-serif;
+    font-size: 15px;
+    border-radius: var(--radius);
+    color: var(--ink);
+    transition: border-color .12s ease;
+  }
+  input:focus, select:focus { outline: none; border-color: var(--select-ring); }
+  input[type=number] { font-family: 'Fraunces', serif; font-size: 18px; }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 520px) { .row2 { grid-template-columns: 1fr; } }
+
+  button.submit {
+    width: 100%;
+    margin-top: 22px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    padding: 14px;
+    font-family: 'Work Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: var(--radius);
+    cursor: pointer;
+  }
+  button.submit:disabled { opacity: 0.5; cursor: default; }
+  button.submit:hover:not(:disabled) { background: #000; }
+
+  .form-msg { font-size: 13px; margin-top: 10px; color: var(--ink-soft); min-height: 16px; }
+  .form-msg.err { color: var(--error); }
+  .form-msg.ok { color: var(--luan); font-weight: 600; }
+
+  #cancelEditLink {
+    display: none;
+    font-size: 13px;
+    color: var(--ink-soft);
+    text-decoration: underline;
+    margin-top: 8px;
+  }
+
+  /* Stats tab */
+  .totals {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 1px;
+    background: var(--ink);
+    border: 1px solid var(--ink);
+    margin-bottom: 20px;
+  }
+  .total-box { background: var(--paper); padding: 16px 14px; }
+  .total-box .label { font-size: 12px; color: var(--ink-soft); margin-bottom: 6px; }
+  .total-box .value { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 500; }
+  .total-box .sub-value { font-size: 12px; color: var(--ink-soft); margin-top: 4px; }
+  .total-box.luan .value { color: var(--luan); }
+  .total-box.mirela .value { color: var(--mirela); }
+  .total-box.ambos .value { color: var(--ambos); }
+  @media (max-width: 560px) { .totals { grid-template-columns: 1fr 1fr; } }
+
+  .hidden { display: none !important; }
+
+  .filters {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    margin-bottom: 12px;
+    border: 1px solid var(--paper-line);
+    padding: 16px;
+    background: #fff;
+  }
+  .filters .field { margin-bottom: 0; flex: 1; min-width: 130px; }
+  .filters select, .filters input {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  .clear-filters {
+    background: none;
+    border: 2px solid var(--ink-soft);
+    color: var(--ink-soft);
+    padding: 8px 12px;
+    font-size: 13px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .clear-filters:hover { border-color: var(--ink); color: var(--ink); }
+
+  .toolbar-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 28px; }
+
+  .ledger-title { font-family: 'Fraunces', serif; font-size: 18px; margin: 0 0 4px; }
+  .ledger-count { font-size: 13px; color: var(--ink-soft); margin-bottom: 14px; }
+
+  .chart-block {
+    border: 1px solid var(--paper-line);
+    background: #fff;
+    padding: 16px;
+    margin-bottom: 28px;
+  }
+  .chart-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+  .pie-svg { width: 140px; height: 140px; flex-shrink: 0; }
+  .chart-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+    width: 100%;
+  }
+  .chart-legend .legend-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .chart-legend .swatch {
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .chart-legend .legend-label { color: var(--ink); flex: 1; }
+  .chart-legend .legend-value { font-family: 'Fraunces', serif; color: var(--ink-soft); white-space: nowrap; font-size: 12px; }
+  .chart-empty { font-size: 13px; color: var(--ink-soft); }
+
+  .entry {
+    display: grid;
+    grid-template-columns: 90px 1fr auto auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 6px;
+    border-bottom: 1px solid var(--paper-line);
+  }
+  @media (max-width: 560px) {
+    .entry { grid-template-columns: 1fr auto; grid-template-areas: "who value" "desc desc" "meta actions"; row-gap: 4px; }
+    .entry .who { grid-area: who; }
+    .entry .value { grid-area: value; }
+    .entry .desc { grid-area: desc; }
+    .entry .entry-actions { grid-area: actions; justify-self: end; }
+  }
+  .entry .who {
+    font-size: 12px; font-weight: 600; padding: 3px 8px;
+    border-radius: var(--radius); display: inline-block; width: fit-content;
+  }
+  .who.Luan { background: var(--luan-bg); color: var(--luan); }
+  .who.Ambos { background: var(--ambos-bg); color: var(--ambos); }
+  .who.Mirela { background: var(--mirela-bg); color: var(--mirela); }
+  .entry .desc { font-size: 14px; }
+  .entry .desc .meta { display: block; font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+  .entry .value { font-family: 'Fraunces', serif; font-size: 17px; font-weight: 500; text-align: right; white-space: nowrap; }
+  .entry-actions { display: flex; gap: 4px; }
+  .del-btn, .edit-btn { background: none; border: none; color: var(--ink-soft); font-size: 13px; cursor: pointer; padding: 4px 8px; }
+  .del-btn:hover { color: var(--error); }
+  .edit-btn:hover { color: var(--select-ring); }
+
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--ink-soft); font-size: 14px; }
+
+  footer { margin-top: 40px; font-size: 12px; color: var(--ink-soft); text-align: center; }
+
+  .settings-btn {
+    background: none; border: 1px solid var(--ink-soft); border-radius: 8px;
+    padding: 6px 10px; font-size: 13px; color: var(--ink); cursor: pointer;
+  }
+  .settings-btn:hover { border-color: var(--select-ring); }
+  .fechamento-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line, #E5E0D5);
+  }
+  .fechamento-row label { font-size: 14px; }
+  .fechamento-row input {
+    width: 64px; padding: 6px 8px; border: 1px solid var(--ink-soft);
+    border-radius: 8px; font-size: 14px; text-align: center;
+  }
+  .field-hint { font-size: 12px; color: var(--ink-soft); margin-top: 4px; display: block; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Caderno de Gastos</h1>
+    <button type="button" class="settings-btn" id="cartoesConfigBtn" title="Configurar dia de fechamento dos cartões">⚙️ Cartões</button>
+    <div class="connection-status" id="connStatus"></div>
+  </header>
+
+  <div id="setupBanner" class="setup-banner hidden"></div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="registrar">Registrar</button>
+    <button class="tab-btn" data-tab="estatisticas">Estatísticas &amp; Filtros</button>
+  </div>
+
+  <!-- ABA: REGISTRAR -->
+  <div class="tab-panel active" id="tab-registrar">
+    <form id="gastoForm">
+      <div class="field">
+        <span class="field-label">Quem está registrando?</span>
+        <div class="pill-group" id="pessoaGroup">
+          <button type="button" class="pill" data-value="Luan">Luan</button>
+          <button type="button" class="pill" data-value="Mirela">Mirela</button>
+          <button type="button" class="pill" data-value="Ambos">Ambos</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="field-label">Forma de pagamento</span>
+        <div class="pill-group" id="formaGroup">
+          <button type="button" class="pill" data-value="Débito">Débito</button>
+          <button type="button" class="pill" data-value="Crédito">Crédito</button>
+        </div>
+      </div>
+
+      <div class="field hidden" id="tipoCompraField">
+        <span class="field-label">Tipo de compra</span>
+        <button type="button" class="cartao-trigger" id="tipoCompraTrigger">
+          <span id="tipoCompraTriggerLabel">À vista ou parcelada?</span>
+          <span class="chevron">▾</span>
+        </button>
+      </div>
+
+      <div class="field hidden" id="parcelasField">
+        <span class="field-label">Número de parcelas</span>
+        <button type="button" class="cartao-trigger" id="parcelasTrigger">
+          <span id="parcelasTriggerLabel">Selecione o número de parcelas</span>
+          <span class="chevron">▾</span>
+        </button>
+      </div>
+
+      <div class="field">
+        <span class="field-label">Cartão</span>
+        <button type="button" class="cartao-trigger" id="cartaoTrigger">
+          <span id="cartaoTriggerLabel">Selecione o cartão</span>
+          <span class="chevron">▾</span>
+        </button>
+      </div>
+
+      <div class="field hidden" id="faturaField">
+        <span class="field-label">Mês da fatura</span>
+        <input type="month" id="faturaInput">
+        <span class="field-hint" id="faturaHint"></span>
+      </div>
+
+      <div class="field">
+        <span class="field-label">Categoria</span>
+        <button type="button" class="cartao-trigger" id="categoriaTrigger">
+          <span id="categoriaTriggerLabel">Selecione a categoria</span>
+          <span class="chevron">▾</span>
+        </button>
+      </div>
+
+      <div class="field" id="valorNormalField">
+        <span class="field-label">Valor</span>
+        <input type="text" inputmode="numeric" id="valorInput" placeholder="R$ 0,00">
+      </div>
+
+      <div class="row2 hidden" id="valorParceladoFields">
+        <div class="field">
+          <span class="field-label">Valor total da compra</span>
+          <input type="text" inputmode="numeric" id="valorTotalInput" placeholder="R$ 0,00">
+        </div>
+        <div class="field">
+          <span class="field-label">Valor de cada parcela</span>
+          <input type="text" inputmode="numeric" id="valorParcelaInput" placeholder="R$ 0,00">
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="field-label">Descrição</span>
+        <input type="text" id="descInput" placeholder="Ex: mercado, gasolina...">
+      </div>
+
+      <button type="submit" class="submit" id="submitBtn">Registrar gasto</button>
+      <div class="form-msg" id="formMsg"></div>
+      <a href="#" id="cancelEditLink">cancelar edição</a>
+      <div class="form-msg hidden" id="editParceladoNotice" style="color:var(--select-ring);"></div>
+    </form>
+  </div>
+
+  <!-- ABA: ESTATÍSTICAS -->
+  <div class="tab-panel" id="tab-estatisticas">
+    <div class="totals">
+      <div class="total-box"><div class="label">Total (filtro atual)</div><div class="value" id="totalGeral">R$ 0,00</div></div>
+      <div class="total-box luan"><div class="label">Luan</div><div class="value" id="totalLuan">R$ 0,00</div></div>
+      <div class="total-box mirela"><div class="label">Mirela</div><div class="value" id="totalMirela">R$ 0,00</div></div>
+      <div class="total-box ambos">
+        <div class="label">Ambos</div>
+        <div class="value" id="totalAmbos">R$ 0,00</div>
+        <div class="sub-value" id="totalAmbosSplit">R$ 0,00 cada</div>
+      </div>
+    </div>
+
+    <div class="filters">
+      <div class="field">
+        <span class="field-label">Pessoa</span>
+        <select id="filterPessoa">
+          <option value="">Todos</option>
+          <option value="Luan">Luan</option>
+          <option value="Mirela">Mirela</option>
+          <option value="Ambos">Ambos</option>
+        </select>
+      </div>
+      <div class="field">
+        <span class="field-label">Cartão</span>
+        <select id="filterCartao"><option value="">Todos</option></select>
+      </div>
+      <div class="field">
+        <span class="field-label">Categoria</span>
+        <select id="filterCategoria"><option value="">Todas</option></select>
+      </div>
+      <div class="field">
+        <span class="field-label">Pagamento</span>
+        <select id="filterForma">
+          <option value="">Todos</option>
+          <option value="Débito">Débito</option>
+          <option value="Crédito">Crédito</option>
+        </select>
+      </div>
+      <div class="field">
+        <span class="field-label">Mês (fatura, no crédito)</span>
+        <input type="month" id="filterMes">
+      </div>
+      <div class="field" style="flex: 2; min-width: 180px;">
+        <span class="field-label">Buscar na descrição</span>
+        <input type="text" id="filterTexto" placeholder="Ex: mercado">
+      </div>
+      <div class="field">
+        <span class="field-label">Ordenar por</span>
+        <select id="filterOrdenar">
+          <option value="recente">Mais recente</option>
+          <option value="antigo">Mais antigo</option>
+          <option value="maior">Maior valor</option>
+          <option value="menor">Menor valor</option>
+        </select>
+      </div>
+      <button class="clear-filters" id="clearFilters">Limpar filtros</button>
+    </div>
+
+    <div class="toolbar-row">
+      <button class="clear-filters" id="exportCsvBtn">Exportar CSV</button>
+      <button class="clear-filters" id="importCsvBtn" type="button">Importar CSV</button>
+      <input type="file" id="importCsvInput" accept=".csv,text/csv" style="display:none;">
+    </div>
+
+    <div class="ledger-title">Gráficos</div>
+    <div class="chart-block">
+      <button type="button" class="cartao-trigger" id="chartTrigger">
+        <span id="chartTriggerLabel">Por categoria</span>
+        <span class="chevron">▾</span>
+      </button>
+      <div id="chartContainer" style="margin-top:16px;"></div>
+    </div>
+
+    <div class="ledger-title">Lançamentos</div>
+    <div class="ledger-count" id="ledgerCount">carregando…</div>
+    <div id="entryList"></div>
+  </div>
+
+  <footer>
+    <a href="#" id="wipeData" style="color:var(--ink-soft); text-decoration:underline;">apagar todos os dados</a>
+  </footer>
+</div>
+
+<div class="modal-overlay" id="cartaoModalOverlay">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <span>Escolha o cartão</span>
+      <button type="button" class="modal-close" id="cartaoModalClose">✕</button>
+    </div>
+    <div class="modal-options" id="cartaoModalOptions"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="fechamentoModalOverlay">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <span>Dia de fechamento de cada cartão</span>
+      <button type="button" class="modal-close" id="fechamentoModalClose">✕</button>
+    </div>
+    <div style="padding: 8px 16px 4px; font-size: 13px; color: var(--ink-soft);">
+      Usado só pra sugerir automaticamente o mês da fatura nas compras no crédito. Deixe em branco se não souber ainda.
+    </div>
+    <div id="fechamentoModalOptions" style="padding: 0 16px;"></div>
+    <div style="padding: 12px 16px 16px;">
+      <button type="button" class="clear-filters" id="fechamentoSalvarBtn" style="width:100%;">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="categoriaModalOverlay">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <span>Escolha a categoria</span>
+      <button type="button" class="modal-close" id="categoriaModalClose">✕</button>
+    </div>
+    <div class="modal-options" id="categoriaModalOptions"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="chartModalOverlay">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <span>Escolha o gráfico</span>
+      <button type="button" class="modal-close" id="chartModalClose">✕</button>
+    </div>
+    <div class="modal-options" id="chartModalOptions"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="confirmModalOverlay">
+  <div class="modal-sheet" style="max-width:380px;">
+    <div class="modal-header">
+      <span>Excluir lançamento</span>
+      <button type="button" class="modal-close" id="confirmModalClose">✕</button>
+    </div>
+    <div class="modal-body-pad">
+      <p id="confirmModalText">Tem certeza que quer excluir esse lançamento? Essa ação não pode ser desfeita.</p>
+      <div class="modal-actions">
+        <button type="button" class="clear-filters" id="confirmCancelBtn">Cancelar</button>
+        <button type="button" class="submit btn-danger" id="confirmDeleteBtn">Excluir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="successToast">Gasto registrado</div>
+
+<script type="module">
+/* ======================================================
+   VERSÃO COM FIREBASE FIRESTORE.
+   Os dados ficam salvos na nuvem, na coleção "gastos" do
+   seu projeto Firebase — sincronizados em tempo real entre
+   todos os aparelhos que abrirem esta página (via onSnapshot).
+
+   IMPORTANTE SOBRE ORDEM: todas as constantes e funções
+   ficam declaradas ANTES de qualquer código que efetivamente
+   rode ao carregar a página. A única execução "de largada"
+   fica no final do arquivo, de propósito, pra nunca disparar
+   antes de algo que ela precisa já existir.
+====================================================== */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import {
+  getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, setDoc,
+  onSnapshot, query, orderBy, writeBatch
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+// ⚠️ TROQUE pelos dados do SEU projeto Firebase.
+// Console → Configurações do projeto → Seus apps → app Web → "Config"
+const firebaseConfig = {
+  apiKey: "AIzaSyBOr6dXXWKDrz0_DIfKzboNIRV14vD6qk4",
+  authDomain: "caderno-de-gastos-b776d.firebaseapp.com",
+  projectId: "caderno-de-gastos-b776d",
+  storageBucket: "caderno-de-gastos-b776d.firebasestorage.app",
+  messagingSenderId: "1063553037692",
+  appId: "1:1063553037692:web:fdf7248e7654fb7344a0f9"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp);
+const gastosRef = collection(db, "gastos");
+
+const CATEGORIA_CORES = {
+  'Lazer': '#93304F',
+  'Contas': '#2B5F5A',
+  'Alimentação': '#C98A2C',
+  'Transporte': '#3D5A80'
+};
+const CATEGORIA_ICONES = {
+  'Lazer': '🎬',
+  'Contas': '🧾',
+  'Alimentação': '🍔',
+  'Transporte': '🚗'
+};
+const CARTAO_CORES = {
+  "Mercado Pago Luan": "#4C6EF5",
+  "Mercado Pago Mirela": "#F76707",
+  "PicPay Luan": "#12B886",
+  "Caixa Tem Luan": "#E64980",
+  "Caixa Visa Luan": "#7048E8",
+  "Nubank Luan": "#FAB005",
+  "Nubank Mirela": "#15AABF",
+  "SParcelado Luan": "#495057",
+  "SParcelado Mirela": "#82C91E",
+  "Inter Luan": "#FA5252"
+};
+const CARTOES = Object.keys(CARTAO_CORES);
+const CATEGORIAS = Object.keys(CATEGORIA_CORES);
+// Mesmas cores usadas nos badges de pessoa (--luan, --mirela, --ambos no CSS)
+const PESSOA_CORES = {
+  'Luan': '#2B5F5A',
+  'Mirela': '#93304F',
+  'Ambos': '#A67C3D'
+};
+const CHART_OPCOES = [
+  { id: 'categoria', label: 'Por categoria' },
+  { id: 'pessoa', label: 'Por pessoa' },
+  { id: 'cartao', label: 'Por cartão' },
+  { id: 'mensal', label: 'Por mês' }
+];
+const MESES_ABREV = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const PARCELAS_OPCOES = Array.from({ length: 23 }, (_, i) => i + 2); // 2x até 24x
+const TIPO_COMPRA_OPCOES = ['À vista', 'Parcelada'];
+
+// ---- Helpers puros (sem tocar no DOM) ----
+function fmtMoney(v) {
+  return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+function fmtMoneyCurto(v) {
+  return 'R$' + Math.round(v);
+}
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str == null ? '' : str;
+  return div.innerHTML;
+}
+function payerFromCartao(cartao) {
+  if (!cartao) return '';
+  const partes = cartao.trim().split(' ');
+  return partes[partes.length - 1];
+}
+
+// Dado uma data de compra e o dia de fechamento do cartão, calcula em qual
+// "mês de fatura" (AAAA-MM) essa compra cai. Compra até o dia de fechamento
+// entra na fatura do mês da própria compra; depois do fechamento, entra na
+// fatura do mês seguinte. Sem dia de fechamento cadastrado, usa o mês da compra.
+function calcularMesReferencia(dataISO, diaFechamento) {
+  const d = new Date(dataISO);
+  let ano = d.getFullYear(), mes = d.getMonth();
+  if (diaFechamento && d.getDate() > diaFechamento) {
+    mes += 1;
+    if (mes > 11) { mes = 0; ano += 1; }
+  }
+  return ano + '-' + String(mes + 1).padStart(2, '0');
+}
+
+// Soma (ou subtrai) meses a uma referência "AAAA-MM", usado pra espalhar as
+// parcelas de uma compra parcelada a partir do mês de fatura escolhido.
+function somarMeses(mesRef, n) {
+  const [a, m] = mesRef.split('-').map(Number);
+  const d = new Date(a, (m - 1) + n, 1);
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+}
+
+// Mês de referência de um lançamento pra fins de filtro/gráfico: usa o campo
+// salvo (mesReferencia) quando existe; em lançamentos antigos, sem esse campo,
+// cai pro mês da própria data de criação.
+function mesRefDe(e) {
+  if (e.mesReferencia) return e.mesReferencia;
+  const d = e.criadoEm ? new Date(e.criadoEm) : null;
+  return d ? (d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')) : null;
+}
+
+function buildPieChartHtml(entries, keyFn, coresMap, iconMap) {
+  const porChave = {};
+  entries.forEach(e => {
+    const chave = keyFn(e) || 'Outros';
+    porChave[chave] = (porChave[chave] || 0) + e.valor;
+  });
+  const chaves = Object.keys(porChave);
+  const total = chaves.reduce((s, c) => s + porChave[c], 0);
+
+  if (total <= 0) {
+    return '<div class="chart-empty">Nenhum gasto para mostrar no gráfico com esse filtro.</div>';
+  }
+
+  const cx = 60, cy = 60, r = 55;
+  let anguloAtual = -90;
+  let pathsHtml = '';
+
+  chaves.forEach(chave => {
+    const valor = porChave[chave];
+    const fatia = (valor / total) * 360;
+    const cor = coresMap[chave] || '#6B6355';
+
+    if (fatia >= 359.999) {
+      pathsHtml += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${cor}"></circle>`;
+    } else {
+      const inicioRad = (anguloAtual * Math.PI) / 180;
+      const fimRad = ((anguloAtual + fatia) * Math.PI) / 180;
+      const x1 = cx + r * Math.cos(inicioRad);
+      const y1 = cy + r * Math.sin(inicioRad);
+      const x2 = cx + r * Math.cos(fimRad);
+      const y2 = cy + r * Math.sin(fimRad);
+      const largeArc = fatia > 180 ? 1 : 0;
+      pathsHtml += `<path d="M ${cx} ${cy} L ${x1.toFixed(2)} ${y1.toFixed(2)} A ${r} ${r} 0 ${largeArc} 1 ${x2.toFixed(2)} ${y2.toFixed(2)} Z" fill="${cor}"></path>`;
+    }
+    anguloAtual += fatia;
+  });
+
+  const legendHtml = chaves.map(chave => {
+    const valor = porChave[chave];
+    const pct = ((valor / total) * 100).toFixed(0);
+    const cor = coresMap[chave] || '#6B6355';
+    const icone = (iconMap && iconMap[chave]) ? iconMap[chave] + ' ' : '';
+    return `
+      <div class="legend-row">
+        <span class="swatch" style="background:${cor}"></span>
+        <span class="legend-label">${icone}${escapeHtml(chave)} (${pct}%)</span>
+        <span class="legend-value">${fmtMoney(valor)}</span>
+      </div>`;
+  }).join('');
+
+  return `<div class="chart-row"><svg viewBox="0 0 120 120" class="pie-svg">${pathsHtml}</svg><div class="chart-legend">${legendHtml}</div></div>`;
+}
+
+function buildBarChartHtml(entries) {
+  if (entries.length === 0) {
+    return '<div class="chart-empty">Nenhum gasto para mostrar no gráfico com esse filtro.</div>';
+  }
+  const porMes = {};
+  entries.forEach(e => {
+    const chave = mesRefDe(e);
+    if (!chave) return;
+    porMes[chave] = (porMes[chave] || 0) + e.valor;
+  });
+  const meses = Object.keys(porMes).sort();
+  if (meses.length === 0) {
+    return '<div class="chart-empty">Nenhum gasto para mostrar no gráfico com esse filtro.</div>';
+  }
+  const max = Math.max(...meses.map(m => porMes[m]));
+  const barWidth = 40, gap = 20, chartHeight = 130, topPad = 24, bottomPad = 40;
+  const svgWidth = meses.length * (barWidth + gap) + gap;
+  const svgHeight = chartHeight + topPad + bottomPad;
+
+  let conteudo = '';
+  meses.forEach((m, i) => {
+    const valor = porMes[m];
+    const h = max > 0 ? (valor / max) * chartHeight : 0;
+    const x = gap + i * (barWidth + gap);
+    const y = topPad + (chartHeight - h);
+    const [ano, mes] = m.split('-');
+    const label = MESES_ABREV[parseInt(mes, 10) - 1] + '/' + ano.slice(2);
+    conteudo += `<rect x="${x}" y="${y}" width="${barWidth}" height="${h}" fill="#2F5DE3" rx="2"></rect>`;
+    conteudo += `<text x="${x + barWidth / 2}" y="${y - 6}" text-anchor="middle" font-size="10" fill="#23201B" font-family="Work Sans, sans-serif">${fmtMoneyCurto(valor)}</text>`;
+    conteudo += `<text x="${x + barWidth / 2}" y="${topPad + chartHeight + 18}" text-anchor="middle" font-size="11" fill="#6B6355" font-family="Work Sans, sans-serif">${label}</text>`;
+  });
+
+  return `<svg viewBox="0 0 ${svgWidth} ${svgHeight}" style="width:100%; max-width:600px; height:auto; display:block; margin:0 auto;">${conteudo}</svg>`;
+}
+
+function exportarCSV(entries) {
+  // Ponto-e-vírgula como separador (padrão do Excel/Sheets em português) —
+  // evita conflito com a vírgula decimal do campo Valor (ex: "150,00").
+  // Todos os campos entre aspas, por segurança extra na leitura dos acentos.
+  function csvCampo(v) {
+    return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+  }
+  const linhas = [['Pessoa', 'Forma', 'Cartão', 'Categoria', 'Valor', 'Descrição', 'Data', 'MêsFatura'].map(csvCampo).join(';')];
+  entries.forEach(e => {
+    const data = e.criadoEm ? new Date(e.criadoEm).toLocaleString('pt-BR') : '';
+    const campos = [
+      e.pessoa || '', e.forma || '', e.cartao || '', e.categoria || '',
+      (e.valor != null ? e.valor.toFixed(2).replace('.', ',') : ''),
+      e.descricao || '', data, e.mesReferencia || ''
+    ].map(csvCampo);
+    linhas.push(campos.join(';'));
+  });
+  const csv = linhas.join('\r\n');
+  // BOM (\uFEFF) no início avisa explicitamente o programa que o arquivo é UTF-8,
+  // o que evita os acentos aparecerem corrompidos ao abrir no Excel/Sheets.
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'gastos.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ---- Importar CSV (formato igual ao gerado por exportarCSV acima) ----
+
+// Faz o parse de uma linha respeitando aspas e campos com ; dentro delas.
+function parseCSVLinha(linha, delim) {
+  const campos = [];
+  let atual = '';
+  let dentroAspas = false;
+  for (let i = 0; i < linha.length; i++) {
+    const c = linha[i];
+    if (dentroAspas) {
+      if (c === '"') {
+        if (linha[i + 1] === '"') { atual += '"'; i++; }
+        else { dentroAspas = false; }
+      } else {
+        atual += c;
+      }
+    } else if (c === '"') {
+      dentroAspas = true;
+    } else if (c === delim) {
+      campos.push(atual);
+      atual = '';
+    } else {
+      atual += c;
+    }
+  }
+  campos.push(atual);
+  return campos;
+}
+
+// Converte "31/08/2026, 17:45:32" ou "31/08/2026 17:45:32" (toLocaleString pt-BR) para ISO.
+function parseDataBR(str) {
+  const m = String(str || '').match(/(\d{2})\/(\d{2})\/(\d{4})[,]?\s*(\d{2}):(\d{2}):(\d{2})/);
+  if (!m) return null;
+  const [, dd, mm, yyyy, hh, mi, ss] = m;
+  const d = new Date(Number(yyyy), Number(mm) - 1, Number(dd), Number(hh), Number(mi), Number(ss));
+  return isNaN(d.getTime()) ? null : d.toISOString();
+}
+
+async function importarCSV(file) {
+  const textoOriginal = await file.text();
+  const texto = textoOriginal.replace(/^\uFEFF/, ''); // remove BOM, se tiver
+  const linhas = texto.split(/\r\n|\n/).filter(l => l.trim() !== '');
+  if (linhas.length <= 1) { alert('O arquivo está vazio ou não tem lançamentos.'); return; }
+
+  const registros = [];
+  for (let i = 1; i < linhas.length; i++) {
+    const campos = parseCSVLinha(linhas[i], ';');
+    if (campos.length < 7) continue;
+    const [pessoa, forma, cartao, categoria, valorStr, descricao, dataStr, mesFaturaStr] = campos;
+    const valor = parseFloat(String(valorStr).replace(',', '.'));
+    if (isNaN(valor)) continue;
+    const criadoEm = parseDataBR(dataStr) || new Date().toISOString();
+    const registro = {
+      pessoa: pessoa || '',
+      forma: forma || '',
+      cartao: cartao || '',
+      categoria: categoria || '',
+      valor,
+      descricao: descricao || '',
+      criadoEm
+    };
+    const mesFatura = (mesFaturaStr || '').trim();
+    if (/^\d{4}-\d{2}$/.test(mesFatura)) {
+      registro.mesReferencia = mesFatura;
+    } else if (registro.forma === 'Crédito') {
+      registro.mesReferencia = calcularMesReferencia(criadoEm, diasFechamento[registro.cartao]);
+    }
+    registros.push(registro);
+  }
+
+  if (registros.length === 0) { alert('Nenhum lançamento válido encontrado nesse CSV.'); return; }
+  if (!confirm(`Importar ${registros.length} lançamento(s) desse CSV para a nuvem? Eles serão somados aos que já existem (nada é apagado).`)) return;
+
+  // Grava em lotes (limite do Firestore é 500 gravações por lote).
+  for (let i = 0; i < registros.length; i += 450) {
+    const lote = registros.slice(i, i + 450);
+    const batch = writeBatch(db);
+    lote.forEach(r => batch.set(doc(gastosRef), r));
+    await batch.commit();
+  }
+  alert(`${registros.length} lançamento(s) importado(s) com sucesso!`);
+}
+
+// ---- Conexão / armazenamento (Firestore) ----
+const connStatus = document.getElementById('connStatus');
+const setupBanner = document.getElementById('setupBanner');
+
+function mostrarErroConexao(msg) {
+  connStatus.textContent = 'sem conexão';
+  connStatus.classList.add('err');
+  if (setupBanner) {
+    setupBanner.classList.remove('hidden');
+    setupBanner.style.display = 'block';
+    setupBanner.innerHTML = `<strong>Não foi possível conectar ao Firebase.</strong> ${escapeHtml(msg)} Confira se o <code>firebaseConfig</code> no início do arquivo está preenchido com os dados do seu projeto e se as regras do Firestore permitem leitura/escrita.`;
+  }
+}
+
+if (firebaseConfig.apiKey === 'COLE_AQUI') {
+  mostrarErroConexao('O firebaseConfig ainda está com os valores de exemplo.');
+}
+
+// `allEntries` é mantido sempre atualizado em tempo real pelo onSnapshot —
+// qualquer gasto registrado em QUALQUER aparelho (seu ou da Mirela) chega
+// aqui automaticamente, sem precisar recarregar a página.
+onSnapshot(
+  query(gastosRef, orderBy('criadoEm', 'desc')),
+  (snapshot) => {
+    connStatus.textContent = '';
+    connStatus.classList.remove('err');
+    allEntries = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderList();
+  },
+  (err) => {
+    mostrarErroConexao(err.message);
+  }
+);
+
+async function addDocLocal(dados) {
+  await addDoc(gastosRef, {
+    ...dados,
+    criadoEm: new Date().toISOString()
+  });
+  // Não precisa chamar renderList() aqui: o onSnapshot acima dispara
+  // sozinho assim que o Firestore confirma o novo lançamento.
+}
+
+// Se o lançamento for uma parcela de compra parcelada (tem parcelamentoId),
+// a alteração é aplicada a TODAS as parcelas ligadas a esse parcelamento —
+// cada uma mantém sua própria data/número de parcela, só os outros campos mudam.
+async function updateDocLocal(id, dados) {
+  const alvo = allEntries.find(e => e.id === id);
+  if (!alvo) return;
+  const agora = new Date().toISOString();
+  if (alvo.parcelamentoId) {
+    const batch = writeBatch(db);
+    allEntries
+      .filter(e => e.parcelamentoId === alvo.parcelamentoId)
+      .forEach(e => batch.update(doc(db, 'gastos', e.id), { ...dados, editadoEm: agora }));
+    await batch.commit();
+  } else {
+    await updateDoc(doc(db, 'gastos', id), { ...dados, editadoEm: agora });
+  }
+}
+
+// Mesma lógica pra exclusão: apagar uma parcela apaga todas as parcelas
+// daquela mesma compra parcelada.
+async function deleteDocLocal(id) {
+  const alvo = allEntries.find(e => e.id === id);
+  if (alvo && alvo.parcelamentoId) {
+    const batch = writeBatch(db);
+    allEntries
+      .filter(e => e.parcelamentoId === alvo.parcelamentoId)
+      .forEach(e => batch.delete(doc(db, 'gastos', e.id)));
+    await batch.commit();
+  } else {
+    await deleteDoc(doc(db, 'gastos', id));
+  }
+}
+
+// Cria uma parcela por mês, a partir do mês atual, todas ligadas pelo mesmo
+// parcelamentoId — é assim que a compra parcelada "aparece" nos meses futuros.
+// mesReferenciaBase é o mês de fatura (AAAA-MM) da 1ª parcela — as seguintes
+// somam 1 mês a partir dele, respeitando qualquer correção manual feita nele.
+async function addParceladoLocal(dadosBase, totalParcelas, mesReferenciaBase) {
+  const agora = new Date();
+  const parcelamentoId = 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+  const batch = writeBatch(db);
+  for (let i = 0; i < totalParcelas; i++) {
+    const dataParcela = new Date(agora.getFullYear(), agora.getMonth() + i, agora.getDate(), agora.getHours(), agora.getMinutes(), agora.getSeconds());
+    const novoDoc = doc(gastosRef);
+    const dadosParcela = { ...dadosBase, parcelamentoId, parcelaAtual: i + 1, parcelaTotal: totalParcelas, criadoEm: dataParcela.toISOString() };
+    if (mesReferenciaBase) dadosParcela.mesReferencia = somarMeses(mesReferenciaBase, i);
+    batch.set(novoDoc, dadosParcela);
+  }
+  await batch.commit();
+}
+
+// ---- Tabs ----
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ---- Modal: Cartão ----
+const cartaoTrigger = document.getElementById('cartaoTrigger');
+const cartaoTriggerLabel = document.getElementById('cartaoTriggerLabel');
+const cartaoModalOverlay = document.getElementById('cartaoModalOverlay');
+const cartaoModalOptions = document.getElementById('cartaoModalOptions');
+const cartaoModalClose = document.getElementById('cartaoModalClose');
+
+CARTOES.forEach(c => {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'modal-option';
+  btn.dataset.value = c;
+  btn.textContent = c;
+  cartaoModalOptions.appendChild(btn);
+});
+
+function abrirCartaoModal() { cartaoModalOverlay.classList.add('open'); }
+function fecharCartaoModal() { cartaoModalOverlay.classList.remove('open'); }
+
+cartaoTrigger.addEventListener('click', abrirCartaoModal);
+cartaoModalClose.addEventListener('click', fecharCartaoModal);
+cartaoModalOverlay.addEventListener('click', (e) => {
+  if (e.target === cartaoModalOverlay) fecharCartaoModal();
+});
+cartaoModalOptions.addEventListener('click', (e) => {
+  const btn = e.target.closest('.modal-option');
+  if (!btn) return;
+  cartaoSel = btn.dataset.value;
+  cartaoModalOptions.querySelectorAll('.modal-option').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  cartaoTriggerLabel.textContent = cartaoSel;
+  cartaoTrigger.classList.add('selected');
+  fecharCartaoModal();
+  atualizarFaturaAuto();
+});
+
+const filterCartaoSelect = document.getElementById('filterCartao');
+CARTOES.forEach(c => {
+  const opt = document.createElement('option');
+  opt.value = c; opt.textContent = c;
+  filterCartaoSelect.appendChild(opt);
+});
+
+// ---- Configuração do dia de fechamento de cada cartão (sincronizada, afeta o mês da fatura sugerido) ----
+let diasFechamento = {};
+const fechamentoConfigRef = doc(db, 'config', 'cartoes');
+
+onSnapshot(fechamentoConfigRef, (snap) => {
+  diasFechamento = (snap.exists() && snap.data().dias) ? snap.data().dias : {};
+  renderFechamentoModal();
+  atualizarFaturaAuto();
+});
+
+const cartoesConfigBtn = document.getElementById('cartoesConfigBtn');
+const fechamentoModalOverlay = document.getElementById('fechamentoModalOverlay');
+const fechamentoModalOptions = document.getElementById('fechamentoModalOptions');
+const fechamentoModalClose = document.getElementById('fechamentoModalClose');
+
+function renderFechamentoModal() {
+  fechamentoModalOptions.innerHTML = '';
+  CARTOES.forEach(c => {
+    const row = document.createElement('div');
+    row.className = 'fechamento-row';
+    row.innerHTML = `<label for="fech_${c}">${escapeHtml(c)}</label>
+      <input type="number" min="1" max="31" id="fech_${c}" data-cartao="${escapeHtml(c)}" placeholder="dia" value="${diasFechamento[c] || ''}">`;
+    fechamentoModalOptions.appendChild(row);
+  });
+}
+renderFechamentoModal();
+
+cartoesConfigBtn.addEventListener('click', () => fechamentoModalOverlay.classList.add('open'));
+fechamentoModalClose.addEventListener('click', () => fechamentoModalOverlay.classList.remove('open'));
+fechamentoModalOverlay.addEventListener('click', (e) => {
+  if (e.target === fechamentoModalOverlay) fechamentoModalOverlay.classList.remove('open');
+});
+document.getElementById('fechamentoSalvarBtn').addEventListener('click', async () => {
+  const novoMapa = {};
+  fechamentoModalOptions.querySelectorAll('input[data-cartao]').forEach(inp => {
+    const v = parseInt(inp.value, 10);
+    if (v >= 1 && v <= 31) novoMapa[inp.dataset.cartao] = v;
+  });
+  await setDoc(fechamentoConfigRef, { dias: novoMapa }, { merge: false });
+  fechamentoModalOverlay.classList.remove('open');
+});
+
+// ---- Modal: Categoria ----
+const categoriaTrigger = document.getElementById('categoriaTrigger');
+const categoriaTriggerLabel = document.getElementById('categoriaTriggerLabel');
+const categoriaModalOverlay = document.getElementById('categoriaModalOverlay');
+const categoriaModalOptions = document.getElementById('categoriaModalOptions');
+const categoriaModalClose = document.getElementById('categoriaModalClose');
+
+CATEGORIAS.forEach(c => {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'modal-option';
+  btn.dataset.value = c;
+  btn.textContent = (CATEGORIA_ICONES[c] || '') + ' ' + c;
+  categoriaModalOptions.appendChild(btn);
+});
+
+function abrirCategoriaModal() { categoriaModalOverlay.classList.add('open'); }
+function fecharCategoriaModal() { categoriaModalOverlay.classList.remove('open'); }
+
+categoriaTrigger.addEventListener('click', abrirCategoriaModal);
+categoriaModalClose.addEventListener('click', fecharCategoriaModal);
+categoriaModalOverlay.addEventListener('click', (e) => {
+  if (e.target === categoriaModalOverlay) fecharCategoriaModal();
+});
+categoriaModalOptions.addEventListener('click', (e) => {
+  const btn = e.target.closest('.modal-option');
+  if (!btn) return;
+  categoriaSel = btn.dataset.value;
+  categoriaModalOptions.querySelectorAll('.modal-option').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  categoriaTriggerLabel.textContent = (CATEGORIA_ICONES[categoriaSel] || '') + ' ' + categoriaSel;
+  categoriaTrigger.classList.add('selected');
+  fecharCategoriaModal();
+});
+
+const filterCategoriaSelect = document.getElementById('filterCategoria');
+CATEGORIAS.forEach(c => {
+  const opt = document.createElement('option');
+  opt.value = c; opt.textContent = (CATEGORIA_ICONES[c] || '') + ' ' + c;
+  filterCategoriaSelect.appendChild(opt);
+});
+
+// ---- Campos condicionais de crédito (tipo de compra + parcelas) ----
+const tipoCompraField = document.getElementById('tipoCompraField');
+const tipoCompraTrigger = document.getElementById('tipoCompraTrigger');
+const tipoCompraTriggerLabel = document.getElementById('tipoCompraTriggerLabel');
+const parcelasField = document.getElementById('parcelasField');
+const parcelasTrigger = document.getElementById('parcelasTrigger');
+const parcelasTriggerLabel = document.getElementById('parcelasTriggerLabel');
+const valorNormalField = document.getElementById('valorNormalField');
+const valorParceladoFields = document.getElementById('valorParceladoFields');
+const valorTotalInput = document.getElementById('valorTotalInput');
+const valorParcelaInput = document.getElementById('valorParcelaInput');
+const faturaField = document.getElementById('faturaField');
+const faturaInput = document.getElementById('faturaInput');
+const faturaHint = document.getElementById('faturaHint');
+let faturaManual = false;
+faturaInput.addEventListener('input', () => { faturaManual = true; });
+
+// Sugere automaticamente o mês da fatura com base no dia de fechamento do
+// cartão escolhido (config em ⚙️ Cartões). Só sugere se o campo ainda não
+// tiver sido editado manualmente nesta sessão do formulário.
+function atualizarFaturaAuto() {
+  if (formaSel !== 'Crédito' || !cartaoSel || faturaManual) return;
+  const dia = diasFechamento[cartaoSel];
+  faturaInput.value = calcularMesReferencia(new Date().toISOString(), dia);
+  faturaHint.textContent = dia
+    ? `Fechamento cadastrado: dia ${dia}. Pode ajustar o mês manualmente se precisar.`
+    : 'Esse cartão ainda não tem dia de fechamento cadastrado (toque em ⚙️ Cartões) — ajuste o mês manualmente se precisar.';
+}
+
+let tipoCompraSel = null, parcelasSel = null;
+
+// Modal: Tipo de compra (à vista / parcelada) — reaproveita o mesmo padrão de janela
+const tipoCompraModalOverlay = document.createElement('div');
+tipoCompraModalOverlay.className = 'modal-overlay';
+tipoCompraModalOverlay.id = 'tipoCompraModalOverlay';
+tipoCompraModalOverlay.innerHTML = `
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <span>Como foi a compra?</span>
+      <button type="button" class="modal-close" id="tipoCompraModalClose">✕</button>
+    </div>
+    <div class="modal-options" id="tipoCompraModalOptions"></div>
+  </div>`;
+document.body.appendChild(tipoCompraModalOverlay);
+const tipoCompraModalOptions = document.getElementById('tipoCompraModalOptions');
+TIPO_COMPRA_OPCOES.forEach(op => {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'modal-option';
+  btn.dataset.value = op;
+  btn.textContent = op;
+  tipoCompraModalOptions.appendChild(btn);
+});
+
+function abrirTipoCompraModal() { tipoCompraModalOverlay.classList.add('open'); }
+function fecharTipoCompraModal() { tipoCompraModalOverlay.classList.remove('open'); }
+tipoCompraTrigger.addEventListener('click', abrirTipoCompraModal);
+document.getElementById('tipoCompraModalClose').addEventListener('click', fecharTipoCompraModal);
+tipoCompraModalOverlay.addEventListener('click', (e) => {
+  if (e.target === tipoCompraModalOverlay) fecharTipoCompraModal();
+});
+tipoCompraModalOptions.addEventListener('click', (e) => {
+  const btn = e.target.closest('.modal-option');
+  if (!btn) return;
+  tipoCompraSel = btn.dataset.value;
+  tipoCompraModalOptions.querySelectorAll('.modal-option').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  tipoCompraTriggerLabel.textContent = tipoCompraSel;
+  tipoCompraTrigger.classList.add('selected');
+  if (tipoCompraSel !== 'Parcelada') {
+    parcelasSel = null;
+    parcelasModalOptions.querySelectorAll('.modal-option').forEach(b => b.classList.remove('selected'));
+    parcelasTrigger.classList.remove('selected');
+    parcelasTriggerLabel.textContent = 'Selecione o número de parcelas';
+  }
+  fecharTipoCompraModal();
+  atualizarVisibilidadeCredito();
+});
+
+// Modal: Número de parcelas (2x a 24x)
+const parcelasModalOverlay = document.createElement('div');
+parcelasModalOverlay.className = 'modal-overlay';
+parcelasModalOverlay.id = 'parcelasModalOverlay';
+parcelasModalOverlay.innerHTML = `
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <span>Em quantas vezes?</span>
+      <button type="button" class="modal-close" id="parcelasModalClose">✕</button>
+    </div>
+    <div class="modal-options" id="parcelasModalOptions"></div>
+  </div>`;
+document.body.appendChild(parcelasModalOverlay);
+const parcelasModalOptions = document.getElementById('parcelasModalOptions');
+PARCELAS_OPCOES.forEach(n => {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'modal-option';
+  btn.dataset.value = String(n);
+  btn.textContent = n + 'x';
+  parcelasModalOptions.appendChild(btn);
+});
+
+function abrirParcelasModal() { parcelasModalOverlay.classList.add('open'); }
+function fecharParcelasModal() { parcelasModalOverlay.classList.remove('open'); }
+parcelasTrigger.addEventListener('click', abrirParcelasModal);
+document.getElementById('parcelasModalClose').addEventListener('click', fecharParcelasModal);
+parcelasModalOverlay.addEventListener('click', (e) => {
+  if (e.target === parcelasModalOverlay) fecharParcelasModal();
+});
+parcelasModalOptions.addEventListener('click', (e) => {
+  const btn = e.target.closest('.modal-option');
+  if (!btn) return;
+  parcelasSel = parseInt(btn.dataset.value, 10);
+  parcelasModalOptions.querySelectorAll('.modal-option').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  parcelasTriggerLabel.textContent = parcelasSel + 'x';
+  parcelasTrigger.classList.add('selected');
+  fecharParcelasModal();
+  atualizarValorParcelaAuto();
+});
+
+// Mostra/esconde os campos de crédito conforme forma de pagamento e tipo de compra.
+// forcarSimples=true é usado ao editar um lançamento já existente: nesse caso sempre
+// mostramos o campo de Valor normal, mesmo que o cartão seja de crédito.
+function atualizarVisibilidadeCredito(forcarSimples) {
+  if (formaSel === 'Crédito') {
+    faturaField.classList.remove('hidden');
+  } else {
+    faturaField.classList.add('hidden');
+  }
+  if (forcarSimples || formaSel !== 'Crédito') {
+    tipoCompraField.classList.add('hidden');
+    parcelasField.classList.add('hidden');
+    valorParceladoFields.classList.add('hidden');
+    valorNormalField.classList.remove('hidden');
+    return;
+  }
+  tipoCompraField.classList.remove('hidden');
+  if (tipoCompraSel === 'Parcelada') {
+    parcelasField.classList.remove('hidden');
+    valorParceladoFields.classList.remove('hidden');
+    valorNormalField.classList.add('hidden');
+  } else {
+    parcelasField.classList.add('hidden');
+    valorParceladoFields.classList.add('hidden');
+    valorNormalField.classList.remove('hidden');
+  }
+}
+
+function resetCreditoState() {
+  tipoCompraSel = null; parcelasSel = null;
+  tipoCompraModalOptions.querySelectorAll('.modal-option').forEach(b => b.classList.remove('selected'));
+  tipoCompraTrigger.classList.remove('selected');
+  tipoCompraTriggerLabel.textContent = 'À vista ou parcelada?';
+  parcelasModalOptions.querySelectorAll('.modal-option').forEach(b => b.classList.remove('selected'));
+  parcelasTrigger.classList.remove('selected');
+  parcelasTriggerLabel.textContent = 'Selecione o número de parcelas';
+  valorTotalInput.value = ''; valorTotalInput.dataset.centavos = '0';
+  valorParcelaInput.value = ''; valorParcelaInput.dataset.centavos = '0';
+}
+
+// ---- Modal: escolha de gráfico ----
+let chartAtual = 'categoria';
+const chartTrigger = document.getElementById('chartTrigger');
+const chartTriggerLabel = document.getElementById('chartTriggerLabel');
+const chartModalOverlay = document.getElementById('chartModalOverlay');
+const chartModalOptions = document.getElementById('chartModalOptions');
+const chartModalClose = document.getElementById('chartModalClose');
+
+CHART_OPCOES.forEach(opc => {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'modal-option';
+  btn.dataset.value = opc.id;
+  btn.textContent = opc.label;
+  if (opc.id === chartAtual) btn.classList.add('selected');
+  chartModalOptions.appendChild(btn);
+});
+
+function abrirChartModal() { chartModalOverlay.classList.add('open'); }
+function fecharChartModal() { chartModalOverlay.classList.remove('open'); }
+
+chartTrigger.addEventListener('click', abrirChartModal);
+chartModalClose.addEventListener('click', fecharChartModal);
+chartModalOverlay.addEventListener('click', (e) => {
+  if (e.target === chartModalOverlay) fecharChartModal();
+});
+chartModalOptions.addEventListener('click', (e) => {
+  const btn = e.target.closest('.modal-option');
+  if (!btn) return;
+  chartAtual = btn.dataset.value;
+  chartModalOptions.querySelectorAll('.modal-option').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  const opcao = CHART_OPCOES.find(o => o.id === chartAtual);
+  chartTriggerLabel.textContent = opcao ? opcao.label : 'Escolher gráfico';
+  fecharChartModal();
+  renderList();
+});
+
+function renderChartAtual(filtered) {
+  const container = document.getElementById('chartContainer');
+  if (chartAtual === 'categoria') {
+    container.innerHTML = buildPieChartHtml(filtered, e => e.categoria, CATEGORIA_CORES, CATEGORIA_ICONES);
+  } else if (chartAtual === 'pessoa') {
+    container.innerHTML = buildPieChartHtml(filtered, e => e.pessoa, PESSOA_CORES, null);
+  } else if (chartAtual === 'cartao') {
+    container.innerHTML = buildPieChartHtml(filtered, e => e.cartao, CARTAO_CORES, null);
+  } else if (chartAtual === 'mensal') {
+    container.innerHTML = buildBarChartHtml(filtered);
+  }
+}
+
+// ---- Modal: confirmar exclusão ----
+let pendingDeleteId = null;
+const confirmModalOverlay = document.getElementById('confirmModalOverlay');
+const confirmModalText = document.getElementById('confirmModalText');
+
+function abrirConfirmModal(id) {
+  pendingDeleteId = id;
+  const entry = allEntries.find(e => e.id === id);
+  if (entry && entry.parcelamentoId) {
+    confirmModalText.textContent = `Esse lançamento faz parte de uma compra parcelada em ${entry.parcelaTotal}x. Excluir vai remover TODAS as parcelas dessa compra (não só essa). Essa ação não pode ser desfeita.`;
+  } else {
+    confirmModalText.textContent = 'Tem certeza que quer excluir esse lançamento? Essa ação não pode ser desfeita.';
+  }
+  confirmModalOverlay.classList.add('open');
+}
+function fecharConfirmModal() {
+  pendingDeleteId = null;
+  confirmModalOverlay.classList.remove('open');
+}
+
+document.getElementById('confirmModalClose').addEventListener('click', fecharConfirmModal);
+document.getElementById('confirmCancelBtn').addEventListener('click', fecharConfirmModal);
+confirmModalOverlay.addEventListener('click', (e) => {
+  if (e.target === confirmModalOverlay) fecharConfirmModal();
+});
+document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+  const id = pendingDeleteId;
+  fecharConfirmModal();
+  if (id) await deleteDocLocal(id);
+});
+
+// ---- Form state ----
+let pessoaSel = null, formaSel = null, cartaoSel = null, categoriaSel = null, editingId = null;
+
+document.querySelectorAll('#pessoaGroup .pill').forEach(btn => {
+  btn.addEventListener('click', () => {
+    pessoaSel = btn.dataset.value;
+    document.querySelectorAll('#pessoaGroup .pill').forEach(b => b.classList.remove('selected', 'Luan', 'Mirela', 'Ambos'));
+    btn.classList.add('selected', pessoaSel);
+  });
+});
+
+document.querySelectorAll('#formaGroup .pill').forEach(btn => {
+  btn.addEventListener('click', () => {
+    formaSel = btn.dataset.value;
+    document.querySelectorAll('#formaGroup .pill').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    resetCreditoState();
+    atualizarVisibilidadeCredito();
+    atualizarFaturaAuto();
+  });
+});
+
+const form = document.getElementById('gastoForm');
+const formMsg = document.getElementById('formMsg');
+const submitBtn = document.getElementById('submitBtn');
+const successToast = document.getElementById('successToast');
+const valorInput = document.getElementById('valorInput');
+const cancelEditLink = document.getElementById('cancelEditLink');
+
+// Máscara de moeda: usuário digita só números, vírgula é automática.
+// Função genérica, aplicada nos 3 campos de valor (normal, total e parcela).
+function aplicarMascaraMoeda(inputEl, aoDigitar) {
+  inputEl.dataset.centavos = '0';
+  inputEl.addEventListener('input', () => {
+    const digitos = inputEl.value.replace(/\D/g, '');
+    inputEl.dataset.centavos = digitos;
+    const centavos = parseInt(digitos || '0', 10);
+    const reais = centavos / 100;
+    inputEl.value = digitos === '' ? '' : reais.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (aoDigitar) aoDigitar();
+  });
+}
+aplicarMascaraMoeda(valorInput);
+aplicarMascaraMoeda(valorTotalInput, atualizarValorParcelaAuto);
+aplicarMascaraMoeda(valorParcelaInput);
+
+// Quando o valor total ou o número de parcelas muda, sugere o valor de cada
+// parcela (total/parcelas) — mas o campo continua editável manualmente.
+function atualizarValorParcelaAuto() {
+  if (!parcelasSel) return;
+  const totalCent = parseInt(valorTotalInput.dataset.centavos || '0', 10);
+  if (totalCent <= 0) return;
+  const parcelaCent = Math.round(totalCent / parcelasSel);
+  valorParcelaInput.dataset.centavos = String(parcelaCent);
+  valorParcelaInput.value = (parcelaCent / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function valorAtual() {
+  const centavos = parseInt(valorInput.dataset.centavos || '0', 10);
+  return centavos / 100;
+}
+
+function setValorInput(valor) {
+  const centavos = Math.round((valor || 0) * 100);
+  valorInput.dataset.centavos = String(centavos);
+  valorInput.value = (centavos / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function mostrarToast(msg) {
+  successToast.textContent = msg || 'Gasto registrado';
+  successToast.classList.add('show');
+  clearTimeout(mostrarToast._t);
+  mostrarToast._t = setTimeout(() => successToast.classList.remove('show'), 2200);
+}
+
+function resetForm() {
+  form.reset();
+  pessoaSel = null; formaSel = null; cartaoSel = null; categoriaSel = null; editingId = null;
+  document.querySelectorAll('.pill').forEach(b => b.classList.remove('selected', 'Luan', 'Mirela', 'Ambos'));
+  cartaoModalOptions.querySelectorAll('.modal-option').forEach(b => b.classList.remove('selected'));
+  cartaoTrigger.classList.remove('selected');
+  cartaoTriggerLabel.textContent = 'Selecione o cartão';
+  categoriaModalOptions.querySelectorAll('.modal-option').forEach(b => b.classList.remove('selected'));
+  categoriaTrigger.classList.remove('selected');
+  categoriaTriggerLabel.textContent = 'Selecione a categoria';
+  valorInput.dataset.centavos = '0';
+  faturaManual = false;
+  faturaInput.value = '';
+  faturaHint.textContent = '';
+  resetCreditoState();
+  atualizarVisibilidadeCredito();
+  submitBtn.textContent = 'Registrar gasto';
+  cancelEditLink.style.display = 'none';
+  document.getElementById('editParceladoNotice').classList.add('hidden');
+}
+
+function iniciarEdicao(entry) {
+  const tabRegistrar = document.querySelector('.tab-btn[data-tab="registrar"]');
+  if (tabRegistrar) tabRegistrar.click();
+
+  pessoaSel = entry.pessoa;
+  document.querySelectorAll('#pessoaGroup .pill').forEach(b => {
+    b.classList.remove('selected', 'Luan', 'Mirela', 'Ambos');
+    if (b.dataset.value === entry.pessoa) b.classList.add('selected', entry.pessoa);
+  });
+
+  formaSel = entry.forma;
+  document.querySelectorAll('#formaGroup .pill').forEach(b => {
+    b.classList.remove('selected');
+    if (b.dataset.value === entry.forma) b.classList.add('selected');
+  });
+  resetCreditoState();
+  atualizarVisibilidadeCredito(true); // edição sempre mostra o campo de Valor simples
+
+  cartaoSel = entry.cartao;
+  cartaoModalOptions.querySelectorAll('.modal-option').forEach(b => {
+    b.classList.remove('selected');
+    if (b.dataset.value === entry.cartao) b.classList.add('selected');
+  });
+  cartaoTriggerLabel.textContent = entry.cartao || 'Selecione o cartão';
+  if (entry.cartao) cartaoTrigger.classList.add('selected');
+
+  faturaManual = true; // é uma edição: o valor já salvo tem prioridade sobre a sugestão automática
+  faturaInput.value = entry.mesReferencia || '';
+  faturaHint.textContent = '';
+
+  categoriaSel = entry.categoria;
+  categoriaModalOptions.querySelectorAll('.modal-option').forEach(b => {
+    b.classList.remove('selected');
+    if (b.dataset.value === entry.categoria) b.classList.add('selected');
+  });
+  categoriaTriggerLabel.textContent = entry.categoria ? ((CATEGORIA_ICONES[entry.categoria] || '') + ' ' + entry.categoria) : 'Selecione a categoria';
+  if (entry.categoria) categoriaTrigger.classList.add('selected');
+
+  setValorInput(entry.valor);
+  document.getElementById('descInput').value = entry.descricao || '';
+
+  editingId = entry.id;
+  submitBtn.textContent = 'Salvar edição';
+  cancelEditLink.style.display = 'inline-block';
+
+  const notice = document.getElementById('editParceladoNotice');
+  if (entry.parcelamentoId) {
+    notice.textContent = `Isso é a parcela ${entry.parcelaAtual}/${entry.parcelaTotal} de uma compra parcelada. Qualquer alteração ou exclusão vai valer para TODAS as parcelas dessa compra.`;
+    notice.classList.remove('hidden');
+  } else {
+    notice.classList.add('hidden');
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+cancelEditLink.addEventListener('click', (e) => {
+  e.preventDefault();
+  resetForm();
+});
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  formMsg.classList.remove('err', 'ok');
+  formMsg.textContent = '';
+
+  const descricao = document.getElementById('descInput').value.trim();
+  const eraEdicao = !!editingId;
+
+  if (!pessoaSel) return showFormError('Selecione quem está registrando.');
+  if (!formaSel) return showFormError('Selecione a forma de pagamento.');
+  if (!cartaoSel) return showFormError('Selecione o cartão.');
+  if (!categoriaSel) return showFormError('Selecione a categoria.');
+  if (!descricao) return showFormError('Informe a descrição da compra.');
+
+  let usarParcelado = false;
+  let valor = 0;
+
+  if (formaSel === 'Crédito') {
+    if (!faturaInput.value) return showFormError('Informe o mês da fatura.');
+  }
+
+  if (formaSel === 'Crédito' && !eraEdicao) {
+    if (!tipoCompraSel) return showFormError('Selecione se a compra foi à vista ou parcelada.');
+    if (tipoCompraSel === 'Parcelada') {
+      if (!parcelasSel) return showFormError('Selecione o número de parcelas.');
+      const totalCent = parseInt(valorTotalInput.dataset.centavos || '0', 10);
+      const parcelaCent = parseInt(valorParcelaInput.dataset.centavos || '0', 10);
+      if (totalCent <= 0) return showFormError('Informe o valor total da compra.');
+      if (parcelaCent <= 0) return showFormError('Informe o valor de cada parcela.');
+      usarParcelado = true;
+    }
+  }
+
+  if (!usarParcelado) {
+    valor = valorAtual();
+    if (!valor || valor <= 0) return showFormError('Informe um valor válido.');
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = eraEdicao ? 'Salvando…' : 'Registrando…';
+
+  try {
+    if (usarParcelado) {
+      const totalParcelas = parcelasSel;
+      const valorParcela = parseInt(valorParcelaInput.dataset.centavos || '0', 10) / 100;
+      const valorTotalCompra = parseInt(valorTotalInput.dataset.centavos || '0', 10) / 100;
+      await addParceladoLocal(
+        { pessoa: pessoaSel, forma: formaSel, cartao: cartaoSel, categoria: categoriaSel, valor: valorParcela, descricao, valorTotalCompra },
+        totalParcelas,
+        faturaInput.value
+      );
+    } else {
+      const dados = { pessoa: pessoaSel, forma: formaSel, cartao: cartaoSel, categoria: categoriaSel, valor, descricao };
+      if (formaSel === 'Crédito') dados.mesReferencia = faturaInput.value;
+      if (eraEdicao) {
+        await updateDocLocal(editingId, dados);
+      } else {
+        await addDocLocal(dados);
+      }
+    }
+    resetForm();
+    mostrarToast(usarParcelado ? 'Compra parcelada registrada' : (eraEdicao ? 'Gasto atualizado' : 'Gasto registrado'));
+  } catch (err) {
+    showFormError('Erro ao salvar: ' + err.message);
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+
+function showFormError(msg) {
+  formMsg.textContent = msg;
+  formMsg.classList.add('err');
+}
+
+// ---- Filtros, busca, ordenação ----
+let allEntries = [];
+let ultimoFiltrado = [];
+
+const filterPessoa = document.getElementById('filterPessoa');
+const filterForma = document.getElementById('filterForma');
+const filterMes = document.getElementById('filterMes');
+const filterTexto = document.getElementById('filterTexto');
+const filterOrdenar = document.getElementById('filterOrdenar');
+
+[filterPessoa, filterCartaoSelect, filterCategoriaSelect, filterForma, filterMes, filterOrdenar].forEach(el => {
+  el.addEventListener('change', renderList);
+});
+filterTexto.addEventListener('input', renderList);
+
+document.getElementById('clearFilters').addEventListener('click', () => {
+  filterPessoa.value = ''; filterCartaoSelect.value = ''; filterCategoriaSelect.value = ''; filterForma.value = '';
+  filterMes.value = ''; filterTexto.value = ''; filterOrdenar.value = 'recente';
+  renderList();
+});
+
+document.getElementById('exportCsvBtn').addEventListener('click', () => {
+  exportarCSV(ultimoFiltrado);
+});
+
+document.getElementById('importCsvBtn').addEventListener('click', () => {
+  document.getElementById('importCsvInput').click();
+});
+
+document.getElementById('importCsvInput').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  e.target.value = ''; // permite selecionar o mesmo arquivo de novo depois, se precisar
+  if (!file) return;
+  try {
+    await importarCSV(file);
+  } catch (err) {
+    alert('Erro ao importar o CSV: ' + err.message);
+  }
+});
+
+document.getElementById('wipeData').addEventListener('click', async (e) => {
+  e.preventDefault();
+  if (!confirm('Apagar todos os lançamentos salvos na nuvem? Isso afeta os dois aparelhos e não pode ser desfeito.')) return;
+  const batch = writeBatch(db);
+  allEntries.forEach(en => batch.delete(doc(db, 'gastos', en.id)));
+  await batch.commit();
+});
+
+function renderList() {
+  const pessoa = filterPessoa.value;
+  const cartao = filterCartaoSelect.value;
+  const categoria = filterCategoriaSelect.value;
+  const forma = filterForma.value;
+  const texto = filterTexto.value.trim().toLowerCase();
+  const mes = filterMes.value; // formato "AAAA-MM", ou "" se não escolhido
+
+  let filtered = allEntries.filter(e => {
+    if (pessoa && e.pessoa !== pessoa) return false;
+    if (cartao && e.cartao !== cartao) return false;
+    if (categoria && e.categoria !== categoria) return false;
+    if (forma && e.forma !== forma) return false;
+    if (texto && !(e.descricao || '').toLowerCase().includes(texto)) return false;
+    if (mes) {
+      if (mesRefDe(e) !== mes) return false;
+    }
+    return true;
+  });
+
+  const ordenar = filterOrdenar.value;
+  filtered = filtered.slice().sort((a, b) => {
+    if (ordenar === 'maior') return b.valor - a.valor;
+    if (ordenar === 'menor') return a.valor - b.valor;
+    const da = a.criadoEm ? new Date(a.criadoEm).getTime() : 0;
+    const db = b.criadoEm ? new Date(b.criadoEm).getTime() : 0;
+    if (ordenar === 'antigo') return da - db;
+    return db - da;
+  });
+
+  ultimoFiltrado = filtered;
+
+  let totalGeral = 0, totalLuan = 0, totalMirela = 0, totalAmbos = 0;
+  filtered.forEach(e => {
+    totalGeral += e.valor;
+    if (e.pessoa === 'Luan') totalLuan += e.valor;
+    if (e.pessoa === 'Mirela') totalMirela += e.valor;
+    if (e.pessoa === 'Ambos') totalAmbos += e.valor;
+  });
+  document.getElementById('totalGeral').textContent = fmtMoney(totalGeral);
+  document.getElementById('totalLuan').textContent = fmtMoney(totalLuan);
+  document.getElementById('totalMirela').textContent = fmtMoney(totalMirela);
+  document.getElementById('totalAmbos').textContent = fmtMoney(totalAmbos);
+  document.getElementById('totalAmbosSplit').textContent = fmtMoney(totalAmbos / 2) + ' cada';
+
+  renderChartAtual(filtered);
+
+  const list = document.getElementById('entryList');
+  const count = document.getElementById('ledgerCount');
+  count.textContent = filtered.length === 0
+    ? 'nenhum lançamento com esse filtro'
+    : filtered.length + (filtered.length === 1 ? ' lançamento' : ' lançamentos');
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="empty-state">Nada por aqui ainda. Registre o primeiro gasto na aba "Registrar".</div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(e => {
+    const data = e.criadoEm ? new Date(e.criadoEm) : null;
+    const dataStr = data ? data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '—';
+    const splitInfo = e.pessoa === 'Ambos' ? ` · ${fmtMoney(e.valor / 2)} cada` : '';
+    const parcelaInfo = e.parcelaTotal ? ` · parcela ${e.parcelaAtual}/${e.parcelaTotal}` : '';
+    const icone = e.categoria ? (CATEGORIA_ICONES[e.categoria] || '') : '';
+    const mesCompra = data ? (data.getFullYear() + '-' + String(data.getMonth() + 1).padStart(2, '0')) : null;
+    const faturaInfo = (e.forma === 'Crédito' && e.mesReferencia && e.mesReferencia !== mesCompra)
+      ? ` · fatura ${e.mesReferencia.split('-')[1]}/${e.mesReferencia.split('-')[0].slice(2)}`
+      : '';
+    return `
+      <div class="entry">
+        <span class="who ${e.pessoa}">${e.pessoa}</span>
+        <span class="desc">${escapeHtml(e.descricao)}<span class="meta">${icone} ${escapeHtml(e.categoria || '—')} · ${escapeHtml(e.cartao)} · ${escapeHtml(e.forma)} · ${dataStr}${splitInfo}${parcelaInfo}${faturaInfo}</span></span>
+        <span class="value">${fmtMoney(e.valor)}</span>
+        <span class="entry-actions">
+          <button class="edit-btn" data-id="${e.id}" data-action="editar" title="Editar">editar</button>
+          <button class="del-btn" data-id="${e.id}" data-action="excluir" title="Excluir">excluir</button>
+        </span>
+      </div>`;
+  }).join('');
+
+  list.querySelectorAll('.edit-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const entry = allEntries.find(x => x.id === btn.dataset.id);
+      if (entry) iniciarEdicao(entry);
+    });
+  });
+  list.querySelectorAll('.del-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      abrirConfirmModal(btn.dataset.id);
+    });
+  });
+}
+
+// ---- Largada: só agora, com tudo já declarado acima ----
+// (o primeiro carregamento da lista acontece sozinho, assim que o
+// onSnapshot acima receber os dados do Firestore pela primeira vez)
+renderList();
+</script>
+</body>
+</html>
